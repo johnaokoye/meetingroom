@@ -23,8 +23,8 @@ export default function RoomCalendar({ events, onSelectSlot, onSelectEvent, user
       borderRadius: '5px',
       border: 'none',
       color: 'white',
-      fontSize: isMobile ? '0.78rem' : '0.82rem',
-      padding: '2px 5px',
+      fontSize: isMobile ? '0.68rem' : '0.72rem',
+      padding: '1px 4px',
     },
   });
 

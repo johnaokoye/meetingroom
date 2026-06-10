@@ -637,6 +637,11 @@ body {
   border-bottom-color: transparent;
 }
 
+/* Events fill to the column edge */
+.rbc-day-slot .rbc-events-container {
+  margin-right: 0;
+}
+
 /* More breathing room inside events */
 .rbc-event {
   min-height: 22px;

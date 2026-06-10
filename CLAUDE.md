@@ -41,19 +41,24 @@ Express app bootstrapped in `index.js`. On startup it runs `db.js:migrate()`, wh
 Routes:
 - `POST /api/auth/register` / `POST /api/auth/login` — JWT auth (7-day tokens)
 - `GET /api/rooms` / `GET /api/rooms/:id` — room listing
+- `POST /api/rooms` / `PUT /api/rooms/:id` / `DELETE /api/rooms/:id` — CRUD (admin only)
+- `PUT /api/rooms/:id/settings` — update `photo_url`, `theme_color`, `tagline` (admin only)
 - `GET /api/bookings?roomId=&start=&end=` — all bookings with optional filters
 - `GET /api/bookings/mine` — current user's upcoming bookings (auth required)
 - `POST /api/bookings` — create booking; checks for time conflicts before insert
+- `POST /api/bookings/:id/checkin` — mark checked-in (only valid while booking is active)
 - `DELETE /api/bookings/:id` — cancel own booking
+- `GET /api/admin/users` / `PATCH /api/admin/users/:id` / `DELETE /api/admin/users/:id` — user management
+- `GET /api/admin/bookings` / `DELETE /api/admin/bookings/:id` — admin booking management
 
-Auth middleware (`middleware/auth.js`) validates the JWT and populates `req.user` with `{ id, email, name }`.
+Auth middleware (`middleware/auth.js`) validates the JWT and populates `req.user` with `{ id, email, name, is_admin }`.
 
 Email notifications are sent via nodemailer in `services/email.js`. If `SMTP_HOST` is empty, email is silently skipped — this is intentional so the app works without SMTP configured.
 
 ### Frontend (`frontend/src/`)
 
 React 18 app using:
-- **react-router-dom v6** — three routes: `/login`, `/register`, `/` (dashboard)
+- **react-router-dom v6** — four routes: `/login`, `/register`, `/` (dashboard), `/admin`
 - **AuthContext** in `App.jsx` — holds user state and `login`/`logout` helpers; token stored in localStorage
 - **axios** in `api.js` — `baseURL: '/api'`, attaches JWT header automatically, redirects to `/login` on 401
 - **react-big-calendar** — weekly calendar in `components/RoomCalendar.jsx`; blue events = current user's bookings, grey = others'
@@ -63,16 +68,26 @@ Key interaction flow in `pages/Dashboard.jsx`:
 2. Click empty calendar slot → opens `BookingModal` to create a booking
 3. Click your own booking on the calendar → opens `BookingModal` to cancel
 4. Sidebar "My Upcoming Bookings" → "View / Cancel" also opens the modal
+5. `components/RoomHero.jsx` — hero banner showing the room's photo, theme color, and tagline
+
+Admin panel (`pages/AdminPanel.jsx`) — only accessible to `is_admin` users; three tabs:
+- **Rooms** — add/edit/delete rooms (uses `RoomModal` inline component)
+- **Bookings** — view all bookings with status badges, cancel any non-past booking
+- **Users** — toggle admin status or delete users (cannot modify your own account)
+
+`components/AdminSettings.jsx` — modal accessible from the dashboard (admin only) to set `photo_url`, `theme_color`, and `tagline` for the first room; fires a `room-settings-updated` custom DOM event on save so the hero refreshes.
 
 ### Database schema
 
 ```sql
-users    (id, name, email, password_hash, created_at)
-rooms    (id, name UNIQUE, capacity, description, created_at)
-bookings (id, room_id→rooms, user_id→users, title, start_time, end_time, created_at)
+users    (id, name, email, password_hash, is_admin, created_at)
+rooms    (id, name UNIQUE, capacity, description, photo_url, theme_color, tagline, created_at)
+bookings (id, room_id→rooms, user_id→users, title, start_time, end_time, checked_in, checked_in_at, created_at)
 ```
 
 Overlap prevention is enforced in the application layer (bookings route queries for conflicts before insert).
+
+`db.js:migrate()` runs on every startup. It uses `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` so it is safe to re-run. It also resets room data to a single "Conference Room" on every startup (`DELETE FROM rooms WHERE name != 'Conference Room'`) — **adding rooms in the admin panel is lost on container restart unless this seed logic is changed.** The first registered user is automatically promoted to admin if no admin exists yet.
 
 ## Environment variables
 
