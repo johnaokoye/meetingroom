@@ -285,6 +285,107 @@ body {
 .modal-actions button:last-child:hover { background: #e5e7eb; opacity: 1; }
 .modal-actions button.danger { background: #dc2626; color: white; }
 .modal-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal { max-height: 92vh; overflow-y: auto; }
+
+/* Invitee chips */
+.chip-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 7px;
+  margin-bottom: 1rem;
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.chip-input:focus-within {
+  border-color: var(--theme);
+  box-shadow: 0 0 0 3px rgba(var(--theme-rgb), 0.15);
+}
+.modal .chip-input input {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  padding: 0.2rem 0.25rem;
+  margin: 0;
+  box-shadow: none;
+}
+.chip-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(var(--theme-rgb), 0.1);
+  color: var(--theme);
+  border-radius: 20px;
+  padding: 0.18rem 0.6rem;
+  font-size: 0.775rem;
+  font-weight: 500;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.chip button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+}
+.chip button:hover { opacity: 1; }
+
+/* Agenda file */
+.modal input[type="file"] { padding: 0.45rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+.file-selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 7px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.file-selected button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.file-selected button:hover { color: #dc2626; }
+
+/* Booking details (view mode) */
+.booking-detail { margin-top: 0.9rem; font-size: 0.85rem; }
+.booking-detail-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+}
+.booking-detail a { color: var(--theme); overflow-wrap: anywhere; }
+.file-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--theme);
+  cursor: pointer;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.file-link:hover { text-decoration: underline; }
+.booking-detail .hint { color: #9ca3af; font-size: 0.75rem; }
 
 /* Admin settings extras */
 .color-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }

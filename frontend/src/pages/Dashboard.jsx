@@ -6,6 +6,18 @@ import RoomCalendar from '../components/RoomCalendar';
 import BookingModal from '../components/BookingModal';
 import AdminSettings from '../components/AdminSettings';
 
+const toModalBooking = (b, title) => ({
+  id: b.id,
+  title,
+  room_name: b.room_name,
+  start: new Date(b.start_time),
+  end: new Date(b.end_time),
+  invitees: b.invitees || [],
+  meeting_link: b.meeting_link,
+  agenda_filename: b.agenda_filename,
+  agenda_size: b.agenda_size,
+});
+
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [view, setView] = useState('hero');
@@ -96,14 +108,18 @@ export default function Dashboard() {
     }
   };
 
-  const handleCreate = async ({ title, startTime, endTime }) => {
+  const handleCreate = async ({ title, startTime, endTime, invitees, meetingLink, agenda }) => {
     try {
-      await api.post('/bookings', {
-        roomId: room.id,
-        title,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
-      });
+      const form = new FormData();
+      form.append('roomId', room.id);
+      form.append('title', title);
+      form.append('startTime', new Date(startTime).toISOString());
+      form.append('endTime', new Date(endTime).toISOString());
+      form.append('invitees', JSON.stringify(invitees || []));
+      if (meetingLink) form.append('meetingLink', meetingLink);
+      if (agenda) form.append('agenda', agenda);
+      await api.post('/bookings', form);
+      if (invitees?.length) showToast(`Booked — ${invitees.length} invitee${invitees.length > 1 ? 's' : ''} notified`);
       setModal(null);
       fetchBookings();
     } catch (err) {
@@ -123,7 +139,7 @@ export default function Dashboard() {
 
   const openEvent = event => {
     if (event.user_id === user.id) {
-      setModal({ type: 'existing', booking: { id: event.id, title: event.raw_title, start: event.start, end: event.end } });
+      setModal({ type: 'existing', booking: toModalBooking(event, event.raw_title) });
     }
   };
 
@@ -184,7 +200,7 @@ export default function Dashboard() {
                 </div>
                 <button className="view-btn" onClick={() => {
                   setSidebarOpen(false);
-                  setModal({ type: 'existing', booking: { id: b.id, title: b.title, start: new Date(b.start_time), end: new Date(b.end_time) } });
+                  setModal({ type: 'existing', booking: toModalBooking(b, b.title) });
                 }}>View / Cancel</button>
               </div>
             ))}

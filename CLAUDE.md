@@ -45,7 +45,8 @@ Routes:
 - `PUT /api/rooms/:id/settings` — update `photo_url`, `theme_color`, `tagline` (admin only)
 - `GET /api/bookings?roomId=&start=&end=` — all bookings with optional filters
 - `GET /api/bookings/mine` — current user's upcoming bookings (auth required)
-- `POST /api/bookings` — create booking; checks for time conflicts before insert
+- `POST /api/bookings` — create booking; checks for time conflicts before insert. Accepts JSON or `multipart/form-data` with optional `invitees` (JSON array of emails), `meetingLink` (http/https URL) and an `agenda` file (≤10 MB, document types only). Invitees are e-mailed (BCC) with the link and agenda attached, and notified on cancellation
+- `GET /api/bookings/:id/agenda` — download the agenda file (auth required)
 - `POST /api/bookings/:id/checkin` — mark checked-in (only valid while booking is active)
 - `DELETE /api/bookings/:id` — cancel own booking
 - `GET /api/admin/users` / `PATCH /api/admin/users/:id` / `DELETE /api/admin/users/:id` — user management
@@ -82,7 +83,8 @@ Admin panel (`pages/AdminPanel.jsx`) — only accessible to `is_admin` users; th
 ```sql
 users    (id, name, email, password_hash, is_admin, created_at)
 rooms    (id, name UNIQUE, capacity, description, photo_url, theme_color, tagline, created_at)
-bookings (id, room_id→rooms, user_id→users, title, start_time, end_time, checked_in, checked_in_at, created_at)
+bookings (id, room_id→rooms, user_id→users, title, start_time, end_time, checked_in, checked_in_at, invitees TEXT[], meeting_link, created_at)
+booking_agendas (booking_id PK→bookings, filename, mimetype, size, data BYTEA, uploaded_at)
 ```
 
 Overlap prevention is enforced in the application layer (bookings route queries for conflicts before insert).

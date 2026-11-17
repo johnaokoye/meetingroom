@@ -36,6 +36,17 @@ async function migrate() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
     ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN DEFAULT FALSE;
     ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP;
+    ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invitees TEXT[] NOT NULL DEFAULT '{}';
+    ALTER TABLE bookings ADD COLUMN IF NOT EXISTS meeting_link TEXT;
+
+    CREATE TABLE IF NOT EXISTS booking_agendas (
+      booking_id INTEGER PRIMARY KEY REFERENCES bookings(id) ON DELETE CASCADE,
+      filename VARCHAR(255) NOT NULL,
+      mimetype VARCHAR(255) NOT NULL,
+      size INTEGER NOT NULL,
+      data BYTEA NOT NULL,
+      uploaded_at TIMESTAMP DEFAULT NOW()
+    );
 
     DELETE FROM rooms WHERE name != 'Conference Room';
     INSERT INTO rooms (name, capacity, description, photo_url)
